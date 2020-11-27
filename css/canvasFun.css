@@ -1,0 +1,47 @@
+body
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#GameBoard
+{
+    border: 1px solid black;
+    height: 512px;
+    width: 832px;
+}
+
+#UserBoard
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 850px;
+    height: 150px;
+}
+
+button
+{
+    height: 40px;
+}
+
+#UserBoard .Instructions
+{
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+}
+#UserBoard #InstructionsControls
+{
+    width: 220px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#UserBoard #Score
+{
+    font-size: 2rem;
+}
