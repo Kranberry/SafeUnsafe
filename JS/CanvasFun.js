@@ -39,6 +39,7 @@ $(function()
     let friction;
     let Keys = [];
     let collisionObjects;
+    let amountOfWalls;
 
     let lastKnownPositionX;
     let lastKnownPositionY;
@@ -73,15 +74,13 @@ $(function()
         PlayerObj.Flag = Flags.Player;
         friction = 0.89;
         Keys = [];
-        collisionObjects = [
-            // { X: 300, Y: 300, Width: 20, Height: 150, Color: "blue", Flag: Flags.Wall},
-            // { X: 400, Y: 400, Width: 150, Height: 20, Color: "orange", Flag: Flags.Wall },
-            // { X: 450, Y: 300, Width: 20, Height: 150, Color: "yellow", Flag: Flags.Wall },
-        ];
+        collisionObjects = [ ];
+        amountOfWalls = 5;
         dissapearingPlatforms = [ ];
         amountOfUnSafePlatforms = 80;
         amountOfSafePlatforms = 2; // Excluding the player platform
         platforms = [ ];
+        GenerateWalls();
         GenerateSafePlatforms();
         GenerateUnsafePlatforms();
         PlayerObj.X = platforms[0].X + platformSize/4;
@@ -116,6 +115,36 @@ $(function()
         }
     }
 
+    function GenerateWalls()
+    {
+        let wallHeight;
+        let WallWidth;
+
+        let possibleSizes = [ 8, 16, 32, 64 ,128, 192 ];
+        
+        for(let i = 0; i < amountOfWalls; i++)
+        {
+            let pos = Positions[Math.floor(Math.random() * Positions.length)];
+            wallHeight = possibleSizes[Math.floor(Math.random() * possibleSizes.length)];
+            if( wallHeight <= possibleSizes[1] )
+            {
+                WallWidth = possibleSizes[Math.floor(Math.random() * (possibleSizes.length - 1 + 1) + 1)];
+            }
+            else if( wallHeight >= possibleSizes[1] )
+            {
+                WallWidth = possibleSizes[Math.floor(Math.random() * 2)];
+            }
+            let wall = { X: pos.X, Y: pos.Y, Width: WallWidth, Height: wallHeight, Color: "orange", Flag: Flags.Wall};
+            collisionObjects.push(wall);
+        }
+
+        // { X: 300, Y: 300, Width: 16, Height: 128, Color: "orange", Flag: Flags.Wall},
+        // { X: 400, Y: 400, Width: 128, Height: 16, Color: "orange", Flag: Flags.Wall },
+        // { X: 450, Y: 300, Width: 192, Height: 8, Color: "orange", Flag: Flags.Wall },
+        // { X: 450, Y: 300, Width: 8, Height: 192, Color: "orange", Flag: Flags.Wall },
+        // { X: 450, Y: 300, Width: 16, Height: 64, Color: "orange", Flag: Flags.Wall },
+    }
+    // Generate all the safe platforms
     function GenerateSafePlatforms()
     {
         let pos = Positions[Math.floor(Math.random() * Positions.length)];
@@ -225,23 +254,6 @@ $(function()
             ctx.closePath();
         }
     }
-
-    // function DrawPositions()
-    // {
-    //     ctx.beginPath();
-    //     ctx.fillStyle = "black";
-    //     ctx.font = "30px Arial";
-    //     ctx.fillText("Current Pos: {" + PlayerObj.X + ", " + PlayerObj.Y + "}" , 10, 60);
-    //     ctx.closePath();
-    // }
-    // function DrawPositions2()
-    // {
-    //     ctx.beginPath();
-    //     ctx.fillStyle = "black";
-    //     ctx.font = "30px Arial";
-    //     ctx.fillText("Last Known Pos: {" + lastKnownPositionX + ", " + lastKnownPositionY + "}" , 10, 90);
-    //     ctx.closePath();
-    // }
 
     // Draw will clear the board aswell as redraw it with updated locations
     function Draw()
