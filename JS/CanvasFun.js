@@ -40,6 +40,11 @@ $(function()
     let Keys = [];
     let collisionObjects;
     let amountOfWalls;
+    let scoreValue;
+    let winningScore;
+    let badScoreColor;
+    let goodScoreColor;
+    let mediocreScoreColor;
 
     let lastKnownPositionX;
     let lastKnownPositionY;
@@ -76,8 +81,13 @@ $(function()
         Keys = [];
         collisionObjects = [ ];
         amountOfWalls = 5;
+        scoreValue = 1;
+        badScoreColor = "red";
+        goodScoreColor = "green";
+        mediocreScoreColor = "orange";
         dissapearingPlatforms = [ ];
         amountOfUnSafePlatforms = 80;
+        winningScore = amountOfUnSafePlatforms;
         amountOfSafePlatforms = 2; // Excluding the player platform
         platforms = [ ];
         GenerateWalls();
@@ -124,11 +134,12 @@ $(function()
         
         for(let i = 0; i < amountOfWalls; i++)
         {
+            // Make the wall only one side long. And not be all to wide
             let vertical = (Math.floor(Math.random() * 10 < 5)) ? true : false;
             let wallHeight = vertical ? longSide : shortSide;
             let WallWidth = vertical ? shortSide : longSide;
             let pos = Positions[Math.floor(Math.random() * Positions.length)];
-            
+            // Random position can make two walls be the exact same position. But right now it does not matter.
             let wall = { X: pos.X, Y: pos.Y, Width: WallWidth, Height: wallHeight, Color: "orange", Flag: Flags.Wall};
             collisionObjects.push(wall);
         }
@@ -216,10 +227,10 @@ $(function()
     }
 
     // Draws the score
-    function DrawScore()
+    function DrawScore(scoreColor)
     {
         ctx.beginPath();
-        ctx.fillStyle = "black";
+        ctx.fillStyle = scoreColor;
         ctx.font = "30px Arial";
         ctx.fillText("[" + PlayerObj.Score + "]", 10, 30);
         ctx.closePath();
@@ -252,19 +263,36 @@ $(function()
         DrawUnSafePlatforms();
         DrawCollisionObjects();
         DrawPlayer();
-        DrawScore();
+        if(PlayerObj.Score < 20)
+            DrawScore(badScoreColor);
+        else if(PlayerObj.Score <= 50)
+            DrawScore(mediocreScoreColor);
+        else if(PlayerObj.Score >= 51)
+            DrawScore(goodScoreColor);
         // DrawPositions();
         // DrawPositions2();
     }
 
-    function UpdateScore(scoreValue)
+    function UpdateScore()
     {
         PlayerObj.Score += scoreValue;
+        if(PlayerObj.Score === winningScore)
+        {
+            console.log(PlayerObj.Score);
+            console.log(winningScore);
+            PlayerWins();
+        }
     }
-    // Game over scub
-    function GameOver()
+
+    function PlayerWins()
     {
-        let answer = prompt("GameOver! Final score: " + PlayerObj.Score);
+        GameOver("You win! Good Job!");
+    }
+    
+    // Game over scub
+    function GameOver(winOrLose = "GameOver!")
+    {
+        let answer = prompt(winOrLose + " Final score: " + PlayerObj.Score);
         if( answer == null)
         {
             alert(":(");
@@ -282,7 +310,7 @@ $(function()
     // This will handle the players movement
     function MoveHandler()
     {
-        let z = 2;
+        let z = 4;
         if(Keys[87])    // Up
         {
             if(PlayerObj.VelocityY > -PlayerObj.MaxSpeed)
@@ -290,6 +318,7 @@ $(function()
                 PlayerObj.VelocityY -= PlayerObj.Speed;
                 // Will save the last know position
                 lastKnownPositionY = PlayerObj.Y+z;
+                lastKnownPositionX = PlayerObj.X;
             }
             else
                 PlayerObj.VelocityY = -PlayerObj.MaxSpeed;
@@ -300,6 +329,7 @@ $(function()
             {
                 PlayerObj.VelocityY += PlayerObj.Speed;
                 lastKnownPositionY = PlayerObj.Y-z;
+                lastKnownPositionX = PlayerObj.X;
             }
             else
                 PlayerObj.VelocityY = PlayerObj.MaxSpeed;
@@ -308,8 +338,9 @@ $(function()
         {
             if(PlayerObj.VelocityX > -PlayerObj.MaxSpeed)
             {
-                lastKnownPositionX = PlayerObj.X+z; 
                 PlayerObj.VelocityX -= PlayerObj.Speed;
+                lastKnownPositionX = PlayerObj.X+z; 
+                lastKnownPositionY = PlayerObj.Y;
             }
             else
                 PlayerObj.VelocityX = -PlayerObj.MaxSpeed;
@@ -320,6 +351,7 @@ $(function()
             {
                 PlayerObj.VelocityX += PlayerObj.Speed;
                 lastKnownPositionX = PlayerObj.X-z;
+                lastKnownPositionY = PlayerObj.Y;
             }
             else
                 PlayerObj.VelocityX = PlayerObj.MaxSpeed;
