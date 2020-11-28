@@ -114,35 +114,24 @@ $(function()
             }
         }
     }
-
+    // Generate walls
     function GenerateWalls()
     {
-        let wallHeight;
-        let WallWidth;
-
-        let possibleSizes = [ 8, 16, 32, 64 ,128, 192 ];
+        // The wall should strectch atleast 1 tile across one side
+        let shortSide = 8;
+        let possibleSizes = [ 64 ,128, 192 ];
+        let longSide = possibleSizes[Math.floor(Math.random() * possibleSizes.length)];
         
         for(let i = 0; i < amountOfWalls; i++)
         {
+            let vertical = (Math.floor(Math.random() * 10 < 5)) ? true : false;
+            let wallHeight = vertical ? longSide : shortSide;
+            let WallWidth = vertical ? shortSide : longSide;
             let pos = Positions[Math.floor(Math.random() * Positions.length)];
-            wallHeight = possibleSizes[Math.floor(Math.random() * possibleSizes.length)];
-            if( wallHeight <= possibleSizes[1] )
-            {
-                WallWidth = possibleSizes[Math.floor(Math.random() * (possibleSizes.length - 1 + 1) + 1)];
-            }
-            else if( wallHeight >= possibleSizes[1] )
-            {
-                WallWidth = possibleSizes[Math.floor(Math.random() * 2)];
-            }
+            
             let wall = { X: pos.X, Y: pos.Y, Width: WallWidth, Height: wallHeight, Color: "orange", Flag: Flags.Wall};
             collisionObjects.push(wall);
         }
-
-        // { X: 300, Y: 300, Width: 16, Height: 128, Color: "orange", Flag: Flags.Wall},
-        // { X: 400, Y: 400, Width: 128, Height: 16, Color: "orange", Flag: Flags.Wall },
-        // { X: 450, Y: 300, Width: 192, Height: 8, Color: "orange", Flag: Flags.Wall },
-        // { X: 450, Y: 300, Width: 8, Height: 192, Color: "orange", Flag: Flags.Wall },
-        // { X: 450, Y: 300, Width: 16, Height: 64, Color: "orange", Flag: Flags.Wall },
     }
     // Generate all the safe platforms
     function GenerateSafePlatforms()
