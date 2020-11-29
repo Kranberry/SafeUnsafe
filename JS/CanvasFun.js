@@ -21,21 +21,12 @@ $(function()
     }
     FixDpi();
     // Declare all the variables
-    let player = new Player(3, 5, "pink");
+    let player = new Player(3, 5, "pink", gameBoardCanvas.width, gameBoardCanvas.height);
     let Positions = [];
     let startPos;
     let friction;
-    let Keys = [];
     let collisionObjects;
     let amountOfWalls;
-    let scoreValue;
-    let winningScore;
-    let badScoreColor;
-    let goodScoreColor;
-    let mediocreScoreColor;
-
-    let lastKnownPositionX;
-    let lastKnownPositionY;
 
     let platformColor;
     let disapperaingPlatformColor;
@@ -45,8 +36,7 @@ $(function()
     let amountOfUnSafePlatforms;
     let amountOfSafePlatforms;
     let platforms = [];
-    // If user is a sore loser!!!!!
-    let stopGame;
+
     // Set all variables to default values
     function StartNewGame()
     {
@@ -57,24 +47,16 @@ $(function()
         disapperaingPlatformColor = "LightGray";
         disapperaingPlatformColorDis = "DarkRed";
         friction = 0.89;
-        Keys = [];
         collisionObjects = [ ];
         amountOfWalls = 5;
-        scoreValue = 1;
-        badScoreColor = "red";
-        goodScoreColor = "green";
-        mediocreScoreColor = "orange";
         dissapearingPlatforms = [ ];
         amountOfUnSafePlatforms = 80;
-        winningScore = amountOfUnSafePlatforms;
         amountOfSafePlatforms = 2; // Excluding the player platform
         platforms = [ ];
         GenerateWalls();
         GenerateSafePlatforms();
         GenerateUnsafePlatforms();
-        player.ResetVariables(platforms[0], platformSize);
-
-        stopGame = false;
+        player.ResetVariables(platforms[0], platformSize, dissapearingPlatforms.length);
 
         // Start the game
         Update();
@@ -242,153 +224,24 @@ $(function()
         DrawCollisionObjects();
         DrawPlayer();
         if(player.Score < 20)
-            DrawScore(badScoreColor);
+            DrawScore(player.badScoreColor);
         else if(player.Score <= 50)
-            DrawScore(mediocreScoreColor);
+            DrawScore(player.mediocreScoreColor);
         else if(player.Score >= 51)
-            DrawScore(goodScoreColor);
+            DrawScore(player.goodScoreColor);
         // DrawPositions();
         // DrawPositions2();
     }
 
-    function UpdateScore()
-    {
-        player.Score += scoreValue;
-        if(player.Score === winningScore)
-        {
-            console.log(player.Score);
-            console.log(winningScore);
-            PlayerWins();
-        }
-    }
-
-    function PlayerWins()
-    {
-        GameOver("You win! Good Job!");
-    }
-    
-    // Game over scub
-    function GameOver(winOrLose = "GameOver!")
-    {
-        let answer = prompt(winOrLose + " Final score: " + player.Score);
-        if( answer == null)
-        {
-            alert(":(");
-            stopGame = true;
-            return;
-        }
-        else
-        {
-            alert(":D");   
-            stopGame = true;
-            return;
-        }
-    }
-
-    // This will handle the players movement
-    function MoveHandler()
-    {
-        let z = 4;
-        if(Keys[87])    // Up
-        {
-            if(player.VelocityY > -player.MaxSpeed)
-            {
-                player.VelocityY -= player.Speed;
-                // Will save the last know position
-                lastKnownPositionY = player.Y+z;
-                lastKnownPositionX = player.X;
-            }
-            else
-                player.VelocityY = -player.MaxSpeed;
-        }
-        else if(Keys[83])    // Down
-        {
-            if(player.VelocityY < player.MaxSpeed)
-            {
-                player.VelocityY += player.Speed;
-                lastKnownPositionY = player.Y-z;
-                lastKnownPositionX = player.X;
-            }
-            else
-                player.VelocityY = player.MaxSpeed;
-        }
-        if(Keys[65])    // Left
-        {
-            if(player.VelocityX > -player.MaxSpeed)
-            {
-                player.VelocityX -= player.Speed;
-                lastKnownPositionX = player.X+z; 
-                lastKnownPositionY = player.Y;
-            }
-            else
-                player.VelocityX = -player.MaxSpeed;
-        }
-        else if(Keys[68])    // Right
-        {
-            if(player.VelocityX < player.MaxSpeed)
-            {
-                player.VelocityX += player.Speed;
-                lastKnownPositionX = player.X-z;
-                lastKnownPositionY = player.Y;
-            }
-            else
-                player.VelocityX = player.MaxSpeed;
-        }
-
-        // Create the testing results on collision
-        let touchingWhiteSpace = phys.HasCollided(player, platforms);
-        let hasCollidiedWithGround = phys.HasCollided(player, dissapearingPlatforms);
-        let hasCollidedWithWalls = phys.HasCollided(player, collisionObjects);
-
-        phys.CollisionWithCanvasWalls(player, gameBoardCanvas.width, gameBoardCanvas.height);
-
-        // Gameover if you touch the whitespace
-        if( (touchingWhiteSpace[1] === undefined && hasCollidiedWithGround[1] === undefined) || (!touchingWhiteSpace[0] && hasCollidiedWithGround[1].Status === 0))
-        {
-            GameOver();
-        }
-        // Check collission with the unsafe platforms
-        if(hasCollidiedWithGround[0] === true && hasCollidiedWithGround[1].Flag == Flags.DisappearingGround && hasCollidiedWithGround[1].Status === 1)
-        {
-            let other = hasCollidiedWithGround[1];
-            UpdateScore(1);
-            other.Status = 2;
-            other.Color = disapperaingPlatformColorDis;
-            setTimeout( () => {
-                other.Status = 0;
-            }, 3000);
-        }
-        // Checks the collission with walls
-        if(hasCollidedWithWalls[0] === true)
-        {
-            player.Color = "red";
-            player.X = lastKnownPositionX;
-            player.Y = lastKnownPositionY;
-            player.VelocityX = 0;
-            player.VelocityY = 0;
-        }
-        else
-            player.Color = "purple";
-
-        
-        // player.VelocityY *= friction;
-        player.Y += player.VelocityY;
-
-        // player.VelocityX *= friction;
-        player.X += player.VelocityX;
-        player.VelocityX = 0;
-        player.VelocityY = 0;
-    }
-
     function Update()
     {
-        if(stopGame === false)
+        if(player.stopGame === false)
         {
             // Keep the game running
             requestAnimationFrame(Update);
             // Keep the game running
             
-            MoveHandler();
+            player.MoveHandler(platforms, dissapearingPlatforms, collisionObjects);
             Draw();
         }
     }
@@ -396,11 +249,11 @@ $(function()
     $(document).on({
         keydown: () =>
         {
-            Keys[event.which] = true;
+            player.Keys[event.which] = true;
         },
         keyup: () =>
         {
-            Keys[event.which] = false;
+            player.Keys[event.which] = false;
         }
     })
 

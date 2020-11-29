@@ -18,20 +18,12 @@ $(function () {
 
   FixDpi(); // Declare all the variables
 
-  var player = new Player(3, 5, "pink");
+  var player = new Player(3, 5, "pink", gameBoardCanvas.width, gameBoardCanvas.height);
   var Positions = [];
   var startPos;
   var friction;
-  var Keys = [];
   var collisionObjects;
   var amountOfWalls;
-  var scoreValue;
-  var winningScore;
-  var badScoreColor;
-  var goodScoreColor;
-  var mediocreScoreColor;
-  var lastKnownPositionX;
-  var lastKnownPositionY;
   var platformColor;
   var disapperaingPlatformColor;
   var disapperaingPlatformColorDis;
@@ -39,9 +31,7 @@ $(function () {
   var dissapearingPlatforms = [];
   var amountOfUnSafePlatforms;
   var amountOfSafePlatforms;
-  var platforms = []; // If user is a sore loser!!!!!
-
-  var stopGame; // Set all variables to default values
+  var platforms = []; // Set all variables to default values
 
   function StartNewGame() {
     platformSize = 64;
@@ -51,24 +41,17 @@ $(function () {
     disapperaingPlatformColor = "LightGray";
     disapperaingPlatformColorDis = "DarkRed";
     friction = 0.89;
-    Keys = [];
     collisionObjects = [];
     amountOfWalls = 5;
-    scoreValue = 1;
-    badScoreColor = "red";
-    goodScoreColor = "green";
-    mediocreScoreColor = "orange";
     dissapearingPlatforms = [];
     amountOfUnSafePlatforms = 80;
-    winningScore = amountOfUnSafePlatforms;
     amountOfSafePlatforms = 2; // Excluding the player platform
 
     platforms = [];
     GenerateWalls();
     GenerateSafePlatforms();
     GenerateUnsafePlatforms();
-    player.ResetVariables(platforms[0], platformSize);
-    stopGame = false; // Start the game
+    player.ResetVariables(platforms[0], platformSize, dissapearingPlatforms.length); // Start the game
 
     Update();
   }
@@ -234,131 +217,26 @@ $(function () {
     DrawUnSafePlatforms();
     DrawCollisionObjects();
     DrawPlayer();
-    if (player.Score < 20) DrawScore(badScoreColor);else if (player.Score <= 50) DrawScore(mediocreScoreColor);else if (player.Score >= 51) DrawScore(goodScoreColor); // DrawPositions();
+    if (player.Score < 20) DrawScore(player.badScoreColor);else if (player.Score <= 50) DrawScore(player.mediocreScoreColor);else if (player.Score >= 51) DrawScore(player.goodScoreColor); // DrawPositions();
     // DrawPositions2();
   }
 
-  function UpdateScore() {
-    player.Score += scoreValue;
-
-    if (player.Score === winningScore) {
-      console.log(player.Score);
-      console.log(winningScore);
-      PlayerWins();
-    }
-  }
-
-  function PlayerWins() {
-    GameOver("You win! Good Job!");
-  } // Game over scub
-
-
-  function GameOver() {
-    var winOrLose = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "GameOver!";
-    var answer = prompt(winOrLose + " Final score: " + player.Score);
-
-    if (answer == null) {
-      alert(":(");
-      stopGame = true;
-      return;
-    } else {
-      alert(":D");
-      stopGame = true;
-      return;
-    }
-  } // This will handle the players movement
-
-
-  function MoveHandler() {
-    var z = 4;
-
-    if (Keys[87]) // Up
-      {
-        if (player.VelocityY > -player.MaxSpeed) {
-          player.VelocityY -= player.Speed; // Will save the last know position
-
-          lastKnownPositionY = player.Y + z;
-          lastKnownPositionX = player.X;
-        } else player.VelocityY = -player.MaxSpeed;
-      } else if (Keys[83]) // Down
-      {
-        if (player.VelocityY < player.MaxSpeed) {
-          player.VelocityY += player.Speed;
-          lastKnownPositionY = player.Y - z;
-          lastKnownPositionX = player.X;
-        } else player.VelocityY = player.MaxSpeed;
-      }
-
-    if (Keys[65]) // Left
-      {
-        if (player.VelocityX > -player.MaxSpeed) {
-          player.VelocityX -= player.Speed;
-          lastKnownPositionX = player.X + z;
-          lastKnownPositionY = player.Y;
-        } else player.VelocityX = -player.MaxSpeed;
-      } else if (Keys[68]) // Right
-      {
-        if (player.VelocityX < player.MaxSpeed) {
-          player.VelocityX += player.Speed;
-          lastKnownPositionX = player.X - z;
-          lastKnownPositionY = player.Y;
-        } else player.VelocityX = player.MaxSpeed;
-      } // Create the testing results on collision
-
-
-    var touchingWhiteSpace = phys.HasCollided(player, platforms);
-    var hasCollidiedWithGround = phys.HasCollided(player, dissapearingPlatforms);
-    var hasCollidedWithWalls = phys.HasCollided(player, collisionObjects);
-    phys.CollisionWithCanvasWalls(player, gameBoardCanvas.width, gameBoardCanvas.height); // Gameover if you touch the whitespace
-
-    if (touchingWhiteSpace[1] === undefined && hasCollidiedWithGround[1] === undefined || !touchingWhiteSpace[0] && hasCollidiedWithGround[1].Status === 0) {
-      GameOver();
-    } // Check collission with the unsafe platforms
-
-
-    if (hasCollidiedWithGround[0] === true && hasCollidiedWithGround[1].Flag == Flags.DisappearingGround && hasCollidiedWithGround[1].Status === 1) {
-      var other = hasCollidiedWithGround[1];
-      UpdateScore(1);
-      other.Status = 2;
-      other.Color = disapperaingPlatformColorDis;
-      setTimeout(function () {
-        other.Status = 0;
-      }, 3000);
-    } // Checks the collission with walls
-
-
-    if (hasCollidedWithWalls[0] === true) {
-      player.Color = "red";
-      player.X = lastKnownPositionX;
-      player.Y = lastKnownPositionY;
-      player.VelocityX = 0;
-      player.VelocityY = 0;
-    } else player.Color = "purple"; // player.VelocityY *= friction;
-
-
-    player.Y += player.VelocityY; // player.VelocityX *= friction;
-
-    player.X += player.VelocityX;
-    player.VelocityX = 0;
-    player.VelocityY = 0;
-  }
-
   function Update() {
-    if (stopGame === false) {
+    if (player.stopGame === false) {
       // Keep the game running
       requestAnimationFrame(Update); // Keep the game running
 
-      MoveHandler();
+      player.MoveHandler(platforms, dissapearingPlatforms, collisionObjects);
       Draw();
     }
   }
 
   $(document).on({
     keydown: function keydown() {
-      Keys[event.which] = true;
+      player.Keys[event.which] = true;
     },
     keyup: function keyup() {
-      Keys[event.which] = false;
+      player.Keys[event.which] = false;
     }
   });
 });
