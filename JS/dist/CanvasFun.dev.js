@@ -18,20 +18,7 @@ $(function () {
 
   FixDpi(); // Declare all the variables
 
-  var PlayerObj = {
-    Score: 0,
-    Width: 0,
-    Height: 0,
-    MaxSpeed: 0,
-    Speed: 0,
-    X: 0,
-    // Initial start value. Always start at the center of the canvas
-    Y: 0,
-    Color: 0,
-    VelocityX: 0,
-    VelocityY: 0,
-    Flag: ""
-  };
+  var player = new Player(3, 5, "pink");
   var Positions = [];
   var startPos;
   var friction;
@@ -63,15 +50,6 @@ $(function () {
     platformColor = "Gray";
     disapperaingPlatformColor = "LightGray";
     disapperaingPlatformColorDis = "DarkRed";
-    PlayerObj.Score = 0;
-    PlayerObj.Width = 32;
-    PlayerObj.Height = 32;
-    PlayerObj.MaxSpeed = 3;
-    PlayerObj.Speed = 3;
-    PlayerObj.Color = "purple";
-    PlayerObj.VelocityX = 0;
-    PlayerObj.VelocityY = 0;
-    PlayerObj.Flag = Flags.Player;
     friction = 0.89;
     Keys = [];
     collisionObjects = [];
@@ -89,8 +67,7 @@ $(function () {
     GenerateWalls();
     GenerateSafePlatforms();
     GenerateUnsafePlatforms();
-    PlayerObj.X = platforms[0].X + platformSize / 4;
-    PlayerObj.Y = platforms[0].Y + platformSize / 4;
+    player.ResetVariables(platforms[0], platformSize);
     stopGame = false; // Start the game
 
     Update();
@@ -161,7 +138,7 @@ $(function () {
     };
     var index = Positions.indexOf(pos);
     Positions.splice(index, 1);
-    platforms.push(safePlatform); // { X: PlayerObj.X - PlayerObj.Width/2, Y: PlayerObj.Y - PlayerObj.Height/2, Width: platformSize, Height: platformSize, Color: platformColor, Flag: Flags.Ground},
+    platforms.push(safePlatform); // { X: player.X - player.Width/2, Y: player.Y - player.Height/2, Width: platformSize, Height: platformSize, Color: platformColor, Flag: Flags.Ground},
 
     for (var i = 0; i < amountOfSafePlatforms; i++) {
       pos = Positions[Math.floor(Math.random() * Positions.length)];
@@ -228,15 +205,15 @@ $(function () {
     ctx.beginPath();
     ctx.fillStyle = scoreColor;
     ctx.font = "30px Arial";
-    ctx.fillText("[" + PlayerObj.Score + "]", 10, 30);
+    ctx.fillText("[" + player.Score + "]", 10, 30);
     ctx.closePath();
   } // Draw the player
 
 
   function DrawPlayer() {
     ctx.beginPath();
-    ctx.fillStyle = PlayerObj.Color;
-    ctx.fillRect(PlayerObj.X, PlayerObj.Y, PlayerObj.Width, PlayerObj.Height);
+    ctx.fillStyle = player.Color;
+    ctx.fillRect(player.X, player.Y, player.Width, player.Height);
     ctx.closePath();
   } // Draw Walls
 
@@ -257,15 +234,15 @@ $(function () {
     DrawUnSafePlatforms();
     DrawCollisionObjects();
     DrawPlayer();
-    if (PlayerObj.Score < 20) DrawScore(badScoreColor);else if (PlayerObj.Score <= 50) DrawScore(mediocreScoreColor);else if (PlayerObj.Score >= 51) DrawScore(goodScoreColor); // DrawPositions();
+    if (player.Score < 20) DrawScore(badScoreColor);else if (player.Score <= 50) DrawScore(mediocreScoreColor);else if (player.Score >= 51) DrawScore(goodScoreColor); // DrawPositions();
     // DrawPositions2();
   }
 
   function UpdateScore() {
-    PlayerObj.Score += scoreValue;
+    player.Score += scoreValue;
 
-    if (PlayerObj.Score === winningScore) {
-      console.log(PlayerObj.Score);
+    if (player.Score === winningScore) {
+      console.log(player.Score);
       console.log(winningScore);
       PlayerWins();
     }
@@ -278,7 +255,7 @@ $(function () {
 
   function GameOver() {
     var winOrLose = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "GameOver!";
-    var answer = prompt(winOrLose + " Final score: " + PlayerObj.Score);
+    var answer = prompt(winOrLose + " Final score: " + player.Score);
 
     if (answer == null) {
       alert(":(");
@@ -297,42 +274,42 @@ $(function () {
 
     if (Keys[87]) // Up
       {
-        if (PlayerObj.VelocityY > -PlayerObj.MaxSpeed) {
-          PlayerObj.VelocityY -= PlayerObj.Speed; // Will save the last know position
+        if (player.VelocityY > -player.MaxSpeed) {
+          player.VelocityY -= player.Speed; // Will save the last know position
 
-          lastKnownPositionY = PlayerObj.Y + z;
-          lastKnownPositionX = PlayerObj.X;
-        } else PlayerObj.VelocityY = -PlayerObj.MaxSpeed;
+          lastKnownPositionY = player.Y + z;
+          lastKnownPositionX = player.X;
+        } else player.VelocityY = -player.MaxSpeed;
       } else if (Keys[83]) // Down
       {
-        if (PlayerObj.VelocityY < PlayerObj.MaxSpeed) {
-          PlayerObj.VelocityY += PlayerObj.Speed;
-          lastKnownPositionY = PlayerObj.Y - z;
-          lastKnownPositionX = PlayerObj.X;
-        } else PlayerObj.VelocityY = PlayerObj.MaxSpeed;
+        if (player.VelocityY < player.MaxSpeed) {
+          player.VelocityY += player.Speed;
+          lastKnownPositionY = player.Y - z;
+          lastKnownPositionX = player.X;
+        } else player.VelocityY = player.MaxSpeed;
       }
 
     if (Keys[65]) // Left
       {
-        if (PlayerObj.VelocityX > -PlayerObj.MaxSpeed) {
-          PlayerObj.VelocityX -= PlayerObj.Speed;
-          lastKnownPositionX = PlayerObj.X + z;
-          lastKnownPositionY = PlayerObj.Y;
-        } else PlayerObj.VelocityX = -PlayerObj.MaxSpeed;
+        if (player.VelocityX > -player.MaxSpeed) {
+          player.VelocityX -= player.Speed;
+          lastKnownPositionX = player.X + z;
+          lastKnownPositionY = player.Y;
+        } else player.VelocityX = -player.MaxSpeed;
       } else if (Keys[68]) // Right
       {
-        if (PlayerObj.VelocityX < PlayerObj.MaxSpeed) {
-          PlayerObj.VelocityX += PlayerObj.Speed;
-          lastKnownPositionX = PlayerObj.X - z;
-          lastKnownPositionY = PlayerObj.Y;
-        } else PlayerObj.VelocityX = PlayerObj.MaxSpeed;
+        if (player.VelocityX < player.MaxSpeed) {
+          player.VelocityX += player.Speed;
+          lastKnownPositionX = player.X - z;
+          lastKnownPositionY = player.Y;
+        } else player.VelocityX = player.MaxSpeed;
       } // Create the testing results on collision
 
 
-    var touchingWhiteSpace = phys.HasCollided(PlayerObj, platforms);
-    var hasCollidiedWithGround = phys.HasCollided(PlayerObj, dissapearingPlatforms);
-    var hasCollidedWithWalls = phys.HasCollided(PlayerObj, collisionObjects);
-    phys.CollisionWithCanvasWalls(PlayerObj, gameBoardCanvas.width, gameBoardCanvas.height); // Gameover if you touch the whitespace
+    var touchingWhiteSpace = phys.HasCollided(player, platforms);
+    var hasCollidiedWithGround = phys.HasCollided(player, dissapearingPlatforms);
+    var hasCollidedWithWalls = phys.HasCollided(player, collisionObjects);
+    phys.CollisionWithCanvasWalls(player, gameBoardCanvas.width, gameBoardCanvas.height); // Gameover if you touch the whitespace
 
     if (touchingWhiteSpace[1] === undefined && hasCollidiedWithGround[1] === undefined || !touchingWhiteSpace[0] && hasCollidiedWithGround[1].Status === 0) {
       GameOver();
@@ -351,19 +328,19 @@ $(function () {
 
 
     if (hasCollidedWithWalls[0] === true) {
-      PlayerObj.Color = "red";
-      PlayerObj.X = lastKnownPositionX;
-      PlayerObj.Y = lastKnownPositionY;
-      PlayerObj.VelocityX = 0;
-      PlayerObj.VelocityY = 0;
-    } else PlayerObj.Color = "purple"; // PlayerObj.VelocityY *= friction;
+      player.Color = "red";
+      player.X = lastKnownPositionX;
+      player.Y = lastKnownPositionY;
+      player.VelocityX = 0;
+      player.VelocityY = 0;
+    } else player.Color = "purple"; // player.VelocityY *= friction;
 
 
-    PlayerObj.Y += PlayerObj.VelocityY; // PlayerObj.VelocityX *= friction;
+    player.Y += player.VelocityY; // player.VelocityX *= friction;
 
-    PlayerObj.X += PlayerObj.VelocityX;
-    PlayerObj.VelocityX = 0;
-    PlayerObj.VelocityY = 0;
+    player.X += player.VelocityX;
+    player.VelocityX = 0;
+    player.VelocityY = 0;
   }
 
   function Update() {

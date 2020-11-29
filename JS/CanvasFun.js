@@ -21,20 +21,7 @@ $(function()
     }
     FixDpi();
     // Declare all the variables
-    let PlayerObj = 
-    {
-        Score: 0,
-        Width: 0,
-        Height: 0,
-        MaxSpeed: 0,
-        Speed: 0,
-        X: 0,    // Initial start value. Always start at the center of the canvas
-        Y: 0,
-        Color: 0,
-        VelocityX: 0, 
-        VelocityY: 0,
-        Flag: ""
-    };
+    let player = new Player(3, 5, "pink");
     let Positions = [];
     let startPos;
     let friction;
@@ -69,15 +56,6 @@ $(function()
         platformColor = "Gray";
         disapperaingPlatformColor = "LightGray";
         disapperaingPlatformColorDis = "DarkRed";
-        PlayerObj.Score = 0;
-        PlayerObj.Width = 32;
-        PlayerObj.Height = 32;
-        PlayerObj.MaxSpeed = 3;
-        PlayerObj.Speed = 3;
-        PlayerObj.Color = "purple";
-        PlayerObj.VelocityX = 0;
-        PlayerObj.VelocityY = 0;
-        PlayerObj.Flag = Flags.Player;
         friction = 0.89;
         Keys = [];
         collisionObjects = [ ];
@@ -94,8 +72,7 @@ $(function()
         GenerateWalls();
         GenerateSafePlatforms();
         GenerateUnsafePlatforms();
-        PlayerObj.X = platforms[0].X + platformSize/4;
-        PlayerObj.Y = platforms[0].Y + platformSize/4;
+        player.ResetVariables(platforms[0], platformSize);
 
         stopGame = false;
 
@@ -158,7 +135,7 @@ $(function()
 
         platforms.push(safePlatform);
 
-        // { X: PlayerObj.X - PlayerObj.Width/2, Y: PlayerObj.Y - PlayerObj.Height/2, Width: platformSize, Height: platformSize, Color: platformColor, Flag: Flags.Ground},
+        // { X: player.X - player.Width/2, Y: player.Y - player.Height/2, Width: platformSize, Height: platformSize, Color: platformColor, Flag: Flags.Ground},
         for(let i = 0; i < amountOfSafePlatforms; i++)
         {
             pos = Positions[Math.floor(Math.random() * Positions.length)];
@@ -233,15 +210,15 @@ $(function()
         ctx.beginPath();
         ctx.fillStyle = scoreColor;
         ctx.font = "30px Arial";
-        ctx.fillText("[" + PlayerObj.Score + "]", 10, 30);
+        ctx.fillText("[" + player.Score + "]", 10, 30);
         ctx.closePath();
     }
     // Draw the player
     function DrawPlayer()
     {
         ctx.beginPath();
-        ctx.fillStyle = PlayerObj.Color;
-        ctx.fillRect(PlayerObj.X, PlayerObj.Y, PlayerObj.Width, PlayerObj.Height);
+        ctx.fillStyle = player.Color;
+        ctx.fillRect(player.X, player.Y, player.Width, player.Height);
         ctx.closePath();
     }
     // Draw Walls
@@ -264,11 +241,11 @@ $(function()
         DrawUnSafePlatforms();
         DrawCollisionObjects();
         DrawPlayer();
-        if(PlayerObj.Score < 20)
+        if(player.Score < 20)
             DrawScore(badScoreColor);
-        else if(PlayerObj.Score <= 50)
+        else if(player.Score <= 50)
             DrawScore(mediocreScoreColor);
-        else if(PlayerObj.Score >= 51)
+        else if(player.Score >= 51)
             DrawScore(goodScoreColor);
         // DrawPositions();
         // DrawPositions2();
@@ -276,10 +253,10 @@ $(function()
 
     function UpdateScore()
     {
-        PlayerObj.Score += scoreValue;
-        if(PlayerObj.Score === winningScore)
+        player.Score += scoreValue;
+        if(player.Score === winningScore)
         {
-            console.log(PlayerObj.Score);
+            console.log(player.Score);
             console.log(winningScore);
             PlayerWins();
         }
@@ -293,7 +270,7 @@ $(function()
     // Game over scub
     function GameOver(winOrLose = "GameOver!")
     {
-        let answer = prompt(winOrLose + " Final score: " + PlayerObj.Score);
+        let answer = prompt(winOrLose + " Final score: " + player.Score);
         if( answer == null)
         {
             alert(":(");
@@ -314,56 +291,56 @@ $(function()
         let z = 4;
         if(Keys[87])    // Up
         {
-            if(PlayerObj.VelocityY > -PlayerObj.MaxSpeed)
+            if(player.VelocityY > -player.MaxSpeed)
             {
-                PlayerObj.VelocityY -= PlayerObj.Speed;
+                player.VelocityY -= player.Speed;
                 // Will save the last know position
-                lastKnownPositionY = PlayerObj.Y+z;
-                lastKnownPositionX = PlayerObj.X;
+                lastKnownPositionY = player.Y+z;
+                lastKnownPositionX = player.X;
             }
             else
-                PlayerObj.VelocityY = -PlayerObj.MaxSpeed;
+                player.VelocityY = -player.MaxSpeed;
         }
         else if(Keys[83])    // Down
         {
-            if(PlayerObj.VelocityY < PlayerObj.MaxSpeed)
+            if(player.VelocityY < player.MaxSpeed)
             {
-                PlayerObj.VelocityY += PlayerObj.Speed;
-                lastKnownPositionY = PlayerObj.Y-z;
-                lastKnownPositionX = PlayerObj.X;
+                player.VelocityY += player.Speed;
+                lastKnownPositionY = player.Y-z;
+                lastKnownPositionX = player.X;
             }
             else
-                PlayerObj.VelocityY = PlayerObj.MaxSpeed;
+                player.VelocityY = player.MaxSpeed;
         }
         if(Keys[65])    // Left
         {
-            if(PlayerObj.VelocityX > -PlayerObj.MaxSpeed)
+            if(player.VelocityX > -player.MaxSpeed)
             {
-                PlayerObj.VelocityX -= PlayerObj.Speed;
-                lastKnownPositionX = PlayerObj.X+z; 
-                lastKnownPositionY = PlayerObj.Y;
+                player.VelocityX -= player.Speed;
+                lastKnownPositionX = player.X+z; 
+                lastKnownPositionY = player.Y;
             }
             else
-                PlayerObj.VelocityX = -PlayerObj.MaxSpeed;
+                player.VelocityX = -player.MaxSpeed;
         }
         else if(Keys[68])    // Right
         {
-            if(PlayerObj.VelocityX < PlayerObj.MaxSpeed)
+            if(player.VelocityX < player.MaxSpeed)
             {
-                PlayerObj.VelocityX += PlayerObj.Speed;
-                lastKnownPositionX = PlayerObj.X-z;
-                lastKnownPositionY = PlayerObj.Y;
+                player.VelocityX += player.Speed;
+                lastKnownPositionX = player.X-z;
+                lastKnownPositionY = player.Y;
             }
             else
-                PlayerObj.VelocityX = PlayerObj.MaxSpeed;
+                player.VelocityX = player.MaxSpeed;
         }
 
         // Create the testing results on collision
-        let touchingWhiteSpace = phys.HasCollided(PlayerObj, platforms);
-        let hasCollidiedWithGround = phys.HasCollided(PlayerObj, dissapearingPlatforms);
-        let hasCollidedWithWalls = phys.HasCollided(PlayerObj, collisionObjects);
+        let touchingWhiteSpace = phys.HasCollided(player, platforms);
+        let hasCollidiedWithGround = phys.HasCollided(player, dissapearingPlatforms);
+        let hasCollidedWithWalls = phys.HasCollided(player, collisionObjects);
 
-        phys.CollisionWithCanvasWalls(PlayerObj, gameBoardCanvas.width, gameBoardCanvas.height);
+        phys.CollisionWithCanvasWalls(player, gameBoardCanvas.width, gameBoardCanvas.height);
 
         // Gameover if you touch the whitespace
         if( (touchingWhiteSpace[1] === undefined && hasCollidiedWithGround[1] === undefined) || (!touchingWhiteSpace[0] && hasCollidiedWithGround[1].Status === 0))
@@ -384,23 +361,23 @@ $(function()
         // Checks the collission with walls
         if(hasCollidedWithWalls[0] === true)
         {
-            PlayerObj.Color = "red";
-            PlayerObj.X = lastKnownPositionX;
-            PlayerObj.Y = lastKnownPositionY;
-            PlayerObj.VelocityX = 0;
-            PlayerObj.VelocityY = 0;
+            player.Color = "red";
+            player.X = lastKnownPositionX;
+            player.Y = lastKnownPositionY;
+            player.VelocityX = 0;
+            player.VelocityY = 0;
         }
         else
-            PlayerObj.Color = "purple";
+            player.Color = "purple";
 
         
-        // PlayerObj.VelocityY *= friction;
-        PlayerObj.Y += PlayerObj.VelocityY;
+        // player.VelocityY *= friction;
+        player.Y += player.VelocityY;
 
-        // PlayerObj.VelocityX *= friction;
-        PlayerObj.X += PlayerObj.VelocityX;
-        PlayerObj.VelocityX = 0;
-        PlayerObj.VelocityY = 0;
+        // player.VelocityX *= friction;
+        player.X += player.VelocityX;
+        player.VelocityX = 0;
+        player.VelocityY = 0;
     }
 
     function Update()
