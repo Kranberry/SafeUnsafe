@@ -3,6 +3,7 @@
 $(function () {
   // Get the windows dpi
   var dpi = window.devicePixelRatio;
+  var phys = new Physics();
   var newGameButton = $("#NewGame");
   var gameBoardCanvas = document.querySelector("#GameBoard");
   var ctx = gameBoardCanvas.getContext("2d"); // Make the Canvas not blurry as shiet
@@ -328,9 +329,10 @@ $(function () {
       } // Create the testing results on collision
 
 
-    var touchingWhiteSpace = HasCollided(PlayerObj, platforms);
-    var hasCollidiedWithGround = HasCollided(PlayerObj, dissapearingPlatforms);
-    var hasCollidedWithWalls = HasCollided(PlayerObj, collisionObjects); // Gameover if you touch the whitespace
+    var touchingWhiteSpace = phys.HasCollided(PlayerObj, platforms);
+    var hasCollidiedWithGround = phys.HasCollided(PlayerObj, dissapearingPlatforms);
+    var hasCollidedWithWalls = phys.HasCollided(PlayerObj, collisionObjects);
+    phys.CollisionWithCanvasWalls(PlayerObj, gameBoardCanvas.width, gameBoardCanvas.height); // Gameover if you touch the whitespace
 
     if (touchingWhiteSpace[1] === undefined && hasCollidiedWithGround[1] === undefined || !touchingWhiteSpace[0] && hasCollidiedWithGround[1].Status === 0) {
       GameOver();
@@ -362,25 +364,6 @@ $(function () {
     PlayerObj.X += PlayerObj.VelocityX;
     PlayerObj.VelocityX = 0;
     PlayerObj.VelocityY = 0;
-  } // Returns an array, with first index is true, and second is the object collided with
-
-
-  function HasCollided(thisObj, otherObj) {
-    if (thisObj.X >= gameBoardCanvas.width - thisObj.Width) thisObj.X = gameBoardCanvas.width - thisObj.Width;else if (thisObj.X <= 0) thisObj.X = 0;
-    if (thisObj.Y >= gameBoardCanvas.height - thisObj.Height) thisObj.Y = gameBoardCanvas.height - thisObj.Height;else if (thisObj.Y < 0) thisObj.Y = 0;
-
-    for (var i = 0; i < otherObj.length; i++) {
-      if (thisObj.X + thisObj.Width > otherObj[i].X && // =>
-      thisObj.X < otherObj[i].X + otherObj[i].Width && // <=
-      thisObj.Y + thisObj.Height > otherObj[i].Y && // ^
-      thisObj.Y < otherObj[i].Y + otherObj[i].Height) // v
-        {
-          // Returnera true och collision objektet
-          return [true, otherObj[i]];
-        }
-    }
-
-    return false;
   }
 
   function Update() {
